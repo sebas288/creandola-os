@@ -1,0 +1,37 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js (App Router), React 19, Supabase (Postgres + Auth + Storage), TypeScript strict, Tailwind CSS 4
+  Domain: decimal.js (money), Zod 4 (validation)
+  Testing: Vitest + happy-dom (unit/integration), pgTAP (database), Playwright (E2E)
+  Architecture: Clean/Hexagonal — pure domain layer (src/domain/) with zero React/Supabase/Next deps
+  Patterns: three Supabase clients (SSR/Browser/Admin), RLS + service_role RPC writes, trigger-based provisioning, channel-separated capabilities, dedupe via SHA-256 + advisory lock
+  DB row decoders: runtime Zod validation on every DB read
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns from invoicesAUD sibling project
+    - Three Supabase clients: Server (SSR), Browser (auth only), Admin (service-role, server-only)
+    - RLS: authenticated SELECT only, all writes via service_role RPC functions
+    - Idempotency: UUID key + SHA-256 fingerprint + pg_advisory_xact_lock
+    - Middleware session refresh, open redirect prevention, cookie security (SameSite=Lax)
+    - Limits duplicated in domain AND database CHECK constraints
+    tdd: true
+    test_command: "npx vitest run"
+  verify:
+    test_command: "npx vitest run"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
