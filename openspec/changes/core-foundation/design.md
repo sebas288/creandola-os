@@ -4,19 +4,20 @@
 
 Creándola OS is one managed, multi-workspace platform. Vercel hosts the single Next.js application and Supabase provides the managed backend. Clerk, self-managed VPS, production Docker, manual backups, reverse proxies, manually managed SSL, and server-security operations are not part of the architecture.
 
-If a Supabase Custom Domain is used, it is one platform backend domain such as `api.somoscreandola.co` for Creándola OS API/Auth/Storage, never one domain per customer. Customer frontend domains (when needed later) are configured in Vercel and are out of scope for this change; see `openspec/changes/host-workspace-resolution/`.
+If a Supabase Custom Domain is used, it is one platform backend domain such as `api.somoscreandola.co` for Creándola OS API/Auth/Storage, never one domain per customer. Customer frontend DNS lives in Cloudflare and points at the same Vercel deployment; the app resolves host → workspace via `domain_mappings` (see `openspec/changes/host-workspace-resolution/`). Schema for mappings ships in WU1b; app wiring lands in WU3.
 
 The foundation has three trust boundaries:
 
 ```text
 Browser / Server Component
+  -> Vercel serves the request (hostname from Cloudflare DNS)
   -> Next.js Proxy refreshes and validates the session optimistically
-  -> authenticated server layout resolves workspace through RLS
+  -> authenticated server layout resolves workspace (slug and/or domain_mappings) through RLS
   -> authenticated SECURITY INVOKER RPC wrapper
   -> private SECURITY DEFINER implementation re-checks membership and writes
 ```
 
-RLS protects exposed-table reads. Direct table writes are not granted to `anon` or `authenticated`; user writes go through authenticated `SECURITY INVOKER` wrappers whose SQL membership checks are authoritative. Cross-workspace integrity is enforced by constraints, not only policies. The admin / secret-key client remains server-only and is limited to provisioning, trusted jobs, and other explicitly trusted system work.
+RLS protects exposed-table reads. Direct table writes are not granted to `anon` or `authenticated`; user writes go through authenticated `SECURITY INVOKER` wrappers whose SQL membership checks are authoritative. Cross-workspace integrity is enforced by constraints, not only policies. The admin / secret-key client remains server-only and is limited to provisioning, trusted jobs, and the narrow pre-auth host resolver when wired in WU3.
 
 Delivery order and product wedge constraints are governed by [RFC 0004 — Delivery Strategy](../../../docs/rfcs/0004-delivery-strategy.md). Later Context Engine inventory (events, memories, embeddings, and related tables) is documented in RFC 0003 and is not part of this change.
 
@@ -27,6 +28,7 @@ Delivery order and product wedge constraints are governed by [RFC 0004 — Deliv
 | Concern | Managed platform decision |
 |---------|---------------------------|
 | Frontend hosting | Vercel hosts one Next.js multi-workspace app |
+| DNS | Cloudflare holds DNS; optional orange-cloud proxy; Vercel is the application origin |
 | Authentication | Supabase Auth; Clerk is not used |
 | Relational data and tenant isolation | Supabase Postgres with Row Level Security (RLS) |
 | Files | Supabase Storage |
@@ -52,8 +54,10 @@ Delivery order and product wedge constraints are governed by [RFC 0004 — Deliv
 | `profiles` | `id UUID PK REFERENCES auth.users(id) ON DELETE CASCADE`, `email TEXT UNIQUE NOT NULL`, `full_name TEXT`, `avatar_url TEXT`, timestamps | Primary/unique indexes are sufficient |
 | `workspaces` | `id UUID PK`, `name TEXT NOT NULL` max 128, `slug TEXT UNIQUE NOT NULL` max 63 and lowercase slug format, `workspace_type NOT NULL`, `personal_owner_id UUID UNIQUE NULL REFERENCES profiles(id)`, `status TEXT NOT NULL`, timestamps; personal workspaces require an owner and non-personal workspaces require null | Unique slug and owner indexes plus `status` only if later queries justify it |
 | `memberships` | `id UUID PK`, `workspace_id UUID NOT NULL REFERENCES workspaces ON DELETE CASCADE`, `profile_id UUID NOT NULL REFERENCES profiles ON DELETE CASCADE`, `role membership_role NOT NULL`, `status TEXT NOT NULL`, timestamps, `UNIQUE(workspace_id, profile_id)` | `(profile_id, status, workspace_id)` for helper lookup; `(workspace_id, status)` for workspace membership operations |
+| `domain_mappings` | `id UUID PK`, `workspace_id UUID NOT NULL REFERENCES workspaces ON DELETE CASCADE`, normalized lowercase `host TEXT UNIQUE NOT NULL` (no scheme/port/path), `status TEXT NOT NULL`, timestamps | Unique host; `(workspace_id, status)` |
+| `workspace_settings` | `workspace_id UUID PK REFERENCES workspaces ON DELETE CASCADE`, `presentation JSONB NOT NULL DEFAULT '{}'` object check (no secrets), timestamps | Primary key |
 
-`profiles.id` is the auth user ID. No `profiles.user_id` column exists.
+`profiles.id` is the auth user ID. No `profiles.user_id` column exists. Host-mapping tables are written only by privileged/server paths; authenticated clients receive SELECT under membership RLS.
 
 ### Phase 1 Context Tables
 
@@ -75,7 +79,9 @@ The GIN indexes use `jsonb_path_ops` and therefore target containment queries su
 
 | Object | `anon` | `authenticated` | Privileged backend |
 |--------|--------|-----------------|--------------------|
-| Public tables | No table privileges | SELECT only, filtered by RLS | Supabase secret key remains fully privileged and server-only; use only for provisioning and trusted jobs |
+| Public tables | No table privileges | SELECT only, filtered by RLS | Supabase secret key remains fully privileged and server-only; use only for provisioning, trusted jobs, and the narrow pre-auth host resolver (WU3) |
+| `domain_mappings` | No table privileges | SELECT only for active members of the mapped workspace | Privileged writes; pre-auth resolver may read safe public fields only via server-only path |
+| `workspace_settings` | No table privileges | SELECT only for active members | Privileged writes; presentation fields only in pre-auth responses |
 | `public.create_entity` | No EXECUTE | EXECUTE | Not the default user path |
 | `private.current_user_workspace_ids` | No EXECUTE | EXECUTE for policy evaluation | Owner |
 | `private.provision_user` | No direct EXECUTE | No direct EXECUTE | Owner only; pgTAP invokes it as the migration/test owner |
@@ -91,6 +97,8 @@ All policies specify `TO authenticated` and are operation-specific:
 - `profiles_select_own`: SELECT where `id = (select auth.uid())`
 - `workspaces_select_member`: SELECT where `id IN (SELECT private.current_user_workspace_ids())`
 - `memberships_select_own`: SELECT where `profile_id = (select auth.uid())`
+- `domain_mappings_select_member`: SELECT where `workspace_id IN (SELECT private.current_user_workspace_ids())`
+- `workspace_settings_select_member`: SELECT where `workspace_id IN (SELECT private.current_user_workspace_ids())`
 - `entities_select_member`: SELECT by row `workspace_id`
 - `entity_properties_select_member`: SELECT by row `workspace_id`
 - `relationships_select_member`: SELECT by row `workspace_id`

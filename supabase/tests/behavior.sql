@@ -128,6 +128,109 @@ RESET ROLE;
 SELECT set_config('request.jwt.claim.sub', '', true);
 
 -- =========================================================================
+-- 3b. HOST MAPPINGS: seed, RLS visibility, write denial, host checks
+-- =========================================================================
+
+DO $$
+DECLARE
+  v_alice_ws uuid;
+  v_bob_ws uuid;
+BEGIN
+  SELECT id INTO v_alice_ws FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001';
+  SELECT id INTO v_bob_ws FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000002';
+
+  INSERT INTO public.domain_mappings (workspace_id, host, status)
+  VALUES
+    (v_alice_ws, 'portal.alice.example', 'active'),
+    (v_bob_ws, 'portal.bob.example', 'active');
+
+  INSERT INTO public.workspace_settings (workspace_id, presentation)
+  VALUES
+    (v_alice_ws, '{"brand":"Alice Co","locale":"es-CO"}'::jsonb),
+    (v_bob_ws, '{"brand":"Bob Co","locale":"es-CO"}'::jsonb);
+END;
+$$;
+
+-- Uppercase / scheme / port hosts must be rejected
+SELECT throws_ok(
+  $$INSERT INTO public.domain_mappings (workspace_id, host)
+    SELECT id, 'Portal.Alice.Example' FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001'$$,
+  '23514'
+);
+
+SELECT throws_ok(
+  $$INSERT INTO public.domain_mappings (workspace_id, host)
+    SELECT id, 'https://evil.example' FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001'$$,
+  '23514'
+);
+
+SELECT throws_ok(
+  $$INSERT INTO public.domain_mappings (workspace_id, host)
+    SELECT id, 'evil.example:443' FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001'$$,
+  '23514'
+);
+
+-- Duplicate host rejected
+SELECT throws_ok(
+  $$INSERT INTO public.domain_mappings (workspace_id, host)
+    SELECT id, 'portal.alice.example' FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000002'$$,
+  '23505'
+);
+
+-- Non-object presentation rejected
+SELECT throws_ok(
+  $$UPDATE public.workspace_settings
+    SET presentation = '["not","object"]'::jsonb
+    WHERE workspace_id = (
+      SELECT id FROM public.workspaces
+      WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001'
+    )$$,
+  '23514'
+);
+
+-- Alice sees only her mapping and settings
+SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
+SET LOCAL ROLE authenticated;
+
+SELECT results_eq(
+  $$SELECT host FROM public.domain_mappings ORDER BY host$$,
+  $$VALUES ('portal.alice.example')$$
+);
+
+SELECT results_eq(
+  $$SELECT presentation->>'brand' FROM public.workspace_settings$$,
+  $$VALUES ('Alice Co')$$
+);
+
+-- Authenticated cannot INSERT mappings
+SELECT throws_ok(
+  $$INSERT INTO public.domain_mappings (workspace_id, host)
+    SELECT id, 'hack.alice.example' FROM public.workspaces
+    WHERE personal_owner_id = 'a0000000-0000-0000-0000-000000000001'$$,
+  '42501'
+);
+
+RESET ROLE;
+
+-- Bob sees only his mapping
+SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000002', true);
+SET LOCAL ROLE authenticated;
+
+SELECT results_eq(
+  $$SELECT host FROM public.domain_mappings ORDER BY host$$,
+  $$VALUES ('portal.bob.example')$$
+);
+
+RESET ROLE;
+SELECT set_config('request.jwt.claim.sub', '', true);
+
+-- =========================================================================
 -- 4. ROLE-LIMITED ENTITY CREATION (via public.create_entity)
 -- =========================================================================
 

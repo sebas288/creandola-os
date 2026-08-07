@@ -5,8 +5,8 @@ context: |
   Domain: decimal.js (money), Zod 4 (validation)
   Testing: Vitest + happy-dom (unit/integration), pgTAP (database), Playwright (E2E)
   Architecture: Clean/Hexagonal — pure domain layer (src/domain/) with zero React/Supabase/Next deps
-  Patterns: one Next.js multi-workspace app on Vercel, three Supabase clients (SSR/Browser/Admin), RLS + authenticated SECURITY INVOKER RPC writes with SQL membership authorization, trigger-based provisioning, slug-based workspace resolution, channel-separated capabilities, dedupe via SHA-256 + advisory lock
-  Delivery: RFC 0004 — build for 1 / template for 10; critical path WU2–WU3; AI infra deferred; one optional stateless wedge AI feature allowed
+  Patterns: one Next.js multi-workspace app on Vercel, Cloudflare DNS to Vercel origin, three Supabase clients (SSR/Browser/Admin), RLS + authenticated SECURITY INVOKER RPC writes with SQL membership authorization, trigger-based provisioning, slug + domain_mappings host resolution, channel-separated capabilities, dedupe via SHA-256 + advisory lock
+  Delivery: RFC 0004 — build for 1 / template for 10; critical path WU1b host schema then WU2–WU3; AI infra deferred; one optional stateless wedge AI feature allowed
   DB row decoders: runtime Zod validation on every DB read
 
 rules:
@@ -24,9 +24,10 @@ rules:
   apply:
     - Follow existing code patterns from invoicesAUD sibling project
     - Supabase is the managed backend: Auth, Postgres, RLS, Storage, Edge Functions, and Cron/jobs when applicable; pgvector is a future evolution after first production client use (RFC 0004)
-    - Vercel hosts the single Next.js multi-workspace app; customer frontend domains are never Supabase custom domains and are deferred to host-workspace-resolution until required
+    - Vercel hosts the single Next.js multi-workspace app; Cloudflare holds DNS; customer frontend domains are never Supabase custom domains
     - Three Supabase clients: Server (SSR), Browser (auth only), Admin (secret key, server-only)
-    - RLS: authenticated reads are membership-filtered; user writes use SECURITY INVOKER RPC wrappers with SQL membership authorization; service_role/server-only operations are limited to provisioning and trusted jobs
+    - RLS: authenticated reads are membership-filtered; user writes use SECURITY INVOKER RPC wrappers with SQL membership authorization; service_role/server-only operations are limited to provisioning, trusted jobs, and the narrow pre-auth host resolver
+    - Host resolution: domain_mappings + workspace_settings; host alone is never authorization
     - Idempotency: UUID key + SHA-256 fingerprint + pg_advisory_xact_lock
     - Next.js 16 proxy.ts session refresh (not middleware.ts), open redirect prevention, cookie security (SameSite=Lax)
     - Limits duplicated in domain AND database CHECK constraints

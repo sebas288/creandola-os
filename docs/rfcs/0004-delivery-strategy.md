@@ -42,25 +42,25 @@ Rules:
 
 ## 3. Critical path
 
-Database Work Unit 1 of `openspec/changes/core-foundation` is complete (RLS, workspaces, idempotency, pgTAP).
+Database Work Unit 1 of `openspec/changes/core-foundation` is complete (RLS, workspaces, idempotency, pgTAP). Host-mapping tables (`domain_mappings`, `workspace_settings`) ship as a follow-on migration before WU2 so production domains already held in Cloudflare can be represented from day one.
 
-The only critical path until a usable app exists:
+The critical path until a usable app exists:
 
-1. **WU2 — Pure domain layer** (Zod schemas, limits, decoders)
-2. **WU3 — Data access and app shell** (Supabase clients, `proxy.ts`, OAuth, `[workspaceSlug]` layout)
+1. **WU1b — Host mapping schema** (`domain_mappings`, `workspace_settings`, RLS) — database only
+2. **WU2 — Pure domain layer** (Zod schemas, limits, decoders)
+3. **WU3 — Data access and app shell** (Supabase clients, `proxy.ts`, OAuth, slug shell **and** host resolution / pre-auth public context)
 
-Every day without an authenticated app is a day clients wait. No other OpenSpec change outranks finishing WU2–WU3.
+Every day without an authenticated app is a day clients wait. App host resolution lands in WU3 alongside the slug shell; membership re-check in the authenticated server layout and RPC remains authoritative.
 
 ### Explicitly not on the critical path
 
-| Deferred until first paying client uses production | Why |
-|----------------------------------------------------|-----|
-| Host-based workspace resolution (`domain_mappings`, `workspace_settings`, pre-auth resolver, custom frontend domains) | See `openspec/changes/host-workspace-resolution/` |
+| Deferred | Why |
+|----------|-----|
+| Per-customer auth callbacks on customer domains | Needs explicit allowlisting and host-bound state; central `app.somoscreandola.co` auth first |
 | RFC 0003 layers 4–6 data infrastructure: `events`, `sources`, `evidence`, `memories`, `context_packs`, `ai_runs`, embeddings / pgvector | Needs real production traffic first |
-| Per-customer auth callbacks on customer domains | Needs host resolution and explicit allowlisting |
 | WhatsApp, email integrations, dashboards, metrics | Product expansion after the wedge works |
 
-Workspace resolution for this delivery phase remains **slug-based** (`/[workspaceSlug]`), with membership re-checked in the authenticated server layout and RPC.
+Slug routes (`/[workspaceSlug]`) remain supported. Custom frontend hosts resolve via `domain_mappings` after WU3 wiring.
 
 ---
 
@@ -85,11 +85,12 @@ Paying clients require uptime, backups, and security. Laura handles data under p
 | Concern | Decision |
 |---------|----------|
 | App hosting | Vercel — one Next.js multi-workspace app |
-| Backend | Supabase Cloud (Auth, Postgres, RLS, Storage, Edge Functions; Cron/jobs when needed) |
+| DNS / edge DNS | Cloudflare holds DNS for platform and customer frontend domains; optional orange-cloud proxy; **Vercel is the application origin** |
+| Backend | Supabase Cloud (Auth, Postgres, RLS, Storage, Edge Functions; Cron/jobs when needed) — treat as paying-client infrastructure from day one (PITR, region, backups) |
 | Region | Choose a Supabase region close to primary clients; document the choice at project creation |
-| Customer frontend domains | Configured in Vercel when needed; never one Supabase project or Custom Domain per customer |
+| Customer frontend domains | Cloudflare DNS → Vercel project domain; app resolves host via `domain_mappings`; never one Supabase project or Custom Domain per customer |
 | Optional platform backend domain | Single Supabase Custom Domain (for example `api.somoscreandola.co`) only if required |
-| Explicitly excluded | Self-managed VPS, production Docker, manual backup process, reverse proxy, manual SSL, Clerk, server-security layer as a product concern |
+| Explicitly excluded | Self-managed VPS, production Docker, manual backup process, self-managed reverse proxy/SSL, Clerk, server-security layer as a product concern |
 
 Local Supabase remains for development and pgTAP only.
 
@@ -105,12 +106,12 @@ Local Supabase remains for development and pgTAP only.
 
 ## 7. Success criteria for this strategy
 
-- [ ] WU2 and WU3 of `core-foundation` complete; lint, typecheck, test, and build pass independently.
+- [ ] WU1b host-mapping migration + pgTAP pass; WU2 and WU3 of `core-foundation` complete; lint, typecheck, test, and build pass independently.
 - [ ] First authenticated user can open a workspace by slug and create Phase 1 entities.
-- [ ] Production target is Supabase Cloud + Vercel; no self-managed production host.
+- [ ] WU3 resolves a mapped Cloudflare→Vercel customer host to a workspace without treating host alone as authorization.
+- [ ] Production target is Supabase Cloud + Vercel with Cloudflare DNS; no self-managed production host.
 - [ ] No `events` / `memories` / embeddings / `ai_runs` tables ship before first production client use.
 - [ ] At most one stateless wedge AI feature may ship before those tables; it uses existing entity data only.
-- [ ] Host/custom-domain resolution stays in `host-workspace-resolution` until a real customer domain is required.
 
 ---
 

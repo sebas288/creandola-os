@@ -41,9 +41,51 @@ SELECT results_eq(
 SELECT has_table('public'::name, 'profiles'::name);
 SELECT has_table('public'::name, 'workspaces'::name);
 SELECT has_table('public'::name, 'memberships'::name);
+SELECT has_table('public'::name, 'domain_mappings'::name);
+SELECT has_table('public'::name, 'workspace_settings'::name);
 SELECT has_table('public'::name, 'entities'::name);
 SELECT has_table('public'::name, 'entity_properties'::name);
 SELECT has_table('public'::name, 'relationships'::name);
+
+-- =========================================================================
+-- domain_mappings
+-- =========================================================================
+SELECT has_column('public'::name, 'domain_mappings'::name, 'id'::name, ''::text);
+SELECT has_column('public'::name, 'domain_mappings'::name, 'workspace_id'::name, ''::text);
+SELECT has_column('public'::name, 'domain_mappings'::name, 'host'::name, ''::text);
+SELECT has_column('public'::name, 'domain_mappings'::name, 'status'::name, ''::text);
+SELECT col_is_pk('public'::name, 'domain_mappings'::name, ARRAY['id']::name[]);
+SELECT col_is_unique('public'::name, 'domain_mappings'::name, ARRAY['host']::name[]);
+SELECT col_not_null('public'::name, 'domain_mappings'::name, 'host'::name, ''::text);
+SELECT col_not_null('public'::name, 'domain_mappings'::name, 'workspace_id'::name, ''::text);
+SELECT col_not_null('public'::name, 'domain_mappings'::name, 'status'::name, ''::text);
+
+SELECT ok(
+  (SELECT count(*) = 1 FROM pg_catalog.pg_constraint
+   WHERE conrelid = 'public.domain_mappings'::regclass
+     AND confrelid = 'public.workspaces'::regclass
+     AND contype = 'f'),
+  'domain_mappings.workspace_id -> workspaces(id) FK'
+);
+
+SELECT has_index('public'::name, 'domain_mappings'::name, 'idx_domain_mappings_workspace_status'::name,
+  ARRAY['workspace_id', 'status']::name[]);
+
+-- =========================================================================
+-- workspace_settings
+-- =========================================================================
+SELECT has_column('public'::name, 'workspace_settings'::name, 'workspace_id'::name, ''::text);
+SELECT has_column('public'::name, 'workspace_settings'::name, 'presentation'::name, ''::text);
+SELECT col_is_pk('public'::name, 'workspace_settings'::name, ARRAY['workspace_id']::name[]);
+SELECT col_not_null('public'::name, 'workspace_settings'::name, 'presentation'::name, ''::text);
+
+SELECT ok(
+  (SELECT count(*) = 1 FROM pg_catalog.pg_constraint
+   WHERE conrelid = 'public.workspace_settings'::regclass
+     AND confrelid = 'public.workspaces'::regclass
+     AND contype = 'f'),
+  'workspace_settings.workspace_id -> workspaces(id) FK'
+);
 
 -- =========================================================================
 -- profiles
@@ -224,9 +266,27 @@ SELECT index_is_type('public'::name, 'entity_properties'::name, 'idx_entity_prop
 SELECT policies_are('public'::name, 'profiles'::name, ARRAY['profiles_select_own']::name[]);
 SELECT policies_are('public'::name, 'workspaces'::name, ARRAY['workspaces_select_member']::name[]);
 SELECT policies_are('public'::name, 'memberships'::name, ARRAY['memberships_select_own']::name[]);
+SELECT policies_are('public'::name, 'domain_mappings'::name, ARRAY['domain_mappings_select_member']::name[]);
+SELECT policies_are('public'::name, 'workspace_settings'::name, ARRAY['workspace_settings_select_member']::name[]);
 SELECT policies_are('public'::name, 'entities'::name, ARRAY['entities_select_member']::name[]);
 SELECT policies_are('public'::name, 'entity_properties'::name, ARRAY['entity_properties_select_member']::name[]);
 SELECT policies_are('public'::name, 'relationships'::name, ARRAY['relationships_select_member']::name[]);
+
+-- Authenticated must have SELECT but not INSERT on host-mapping tables
+SELECT ok(
+  has_table_privilege('authenticated', 'public.domain_mappings', 'SELECT')
+  AND NOT has_table_privilege('authenticated', 'public.domain_mappings', 'INSERT')
+  AND NOT has_table_privilege('authenticated', 'public.domain_mappings', 'UPDATE')
+  AND NOT has_table_privilege('authenticated', 'public.domain_mappings', 'DELETE'),
+  'authenticated SELECT-only on domain_mappings'
+);
+SELECT ok(
+  has_table_privilege('authenticated', 'public.workspace_settings', 'SELECT')
+  AND NOT has_table_privilege('authenticated', 'public.workspace_settings', 'INSERT')
+  AND NOT has_table_privilege('authenticated', 'public.workspace_settings', 'UPDATE')
+  AND NOT has_table_privilege('authenticated', 'public.workspace_settings', 'DELETE'),
+  'authenticated SELECT-only on workspace_settings'
+);
 
 -- =========================================================================
 -- Functions: existence (via catalog for custom-type args)

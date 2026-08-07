@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Create the smallest secure foundation on which later Context Engine changes can build: a Next.js 16 application shell, Supabase authentication and tenancy, the Phase 1 canonical entity schema, typed data-access boundaries, and pure domain validation. Delivery order follows [RFC 0004 — Delivery Strategy](../../../docs/rfcs/0004-delivery-strategy.md): finish WU2–WU3 before host resolution, AI infrastructure, or other platform expansion.
+Create the smallest secure foundation on which later Context Engine changes can build: a Next.js 16 application shell, Supabase authentication and tenancy, the Phase 1 canonical entity schema, typed data-access boundaries, and pure domain validation. Delivery order follows [RFC 0004 — Delivery Strategy](../../../docs/rfcs/0004-delivery-strategy.md): WU1b host-mapping schema now, then WU2–WU3 (app wiring includes host resolution); AI infrastructure stays deferred.
 
 ## Scope
 
@@ -10,6 +10,7 @@ Create the smallest secure foundation on which later Context Engine changes can 
 
 - Project scaffolding: Next.js 16, React 19, Node.js 20.9+, TypeScript strict, Tailwind CSS 4, ESLint flat config, Vitest, and Supabase local development
 - Auth and tenancy schema: `profiles`, `workspaces`, and `memberships`
+- Host mapping schema (WU1b): `domain_mappings` and `workspace_settings` (Cloudflare DNS → Vercel; app resolution in WU3 — see `host-workspace-resolution`)
 - Phase 1 context schema: `entities`, `entity_properties`, and `relationships`
 - RLS and least-privilege grants for every table in `public`
 - Private `SECURITY DEFINER` helpers and a public `SECURITY INVOKER` `create_entity` RPC boundary
@@ -24,7 +25,7 @@ Create the smallest secure foundation on which later Context Engine changes can 
 - `events`, `sources`, `evidence`, `memories`, `documents`, `context_packs`, `ai_runs`, and `access_policies` tables
 - Provenance foreign keys such as `source_id`
 - Entity update/delete RPCs, membership management, and workspace creation outside initial provisioning
-- Host-based workspace resolution: `domain_mappings`, `workspace_settings`, pre-auth host resolver, and customer frontend domains (deferred to `openspec/changes/host-workspace-resolution/`)
+- Per-customer OAuth callbacks on customer domains (central app auth first)
 - WhatsApp, email, AI infrastructure / embeddings / pgvector, dashboards, metrics, external integrations, and file assets
 - Full integration or browser E2E coverage beyond the app-shell smoke checks
 

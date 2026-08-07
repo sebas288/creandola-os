@@ -39,6 +39,19 @@ Each implementation task below has an observable acceptance condition. Tests and
 - [x] **1.8 Verify Work Unit 1.** Reset from empty state, run database tests plus the bounded two-session concurrency harness, and inspect Supabase database/security advisors if supported by the installed CLI.
   - Acceptance: `supabase db reset`, `supabase test db`, and the concurrency harness exit 0; the harness leaves no open test transactions; all advisor findings are fixed or recorded with a reason before review.
 
+## Work Unit 1b: Host Mapping Schema
+
+Database-only follow-on so Cloudflare-held customer hosts can be represented before the app shell exists. App resolution ships in WU3 (`host-workspace-resolution`).
+
+- [x] **1b.1 Write RED pgTAP catalog/behavior for host mappings.** Cover `domain_mappings` and `workspace_settings` columns, unique host, host normalization checks, FK cascade, indexes, RLS enablement, member SELECT visibility, cross-member invisibility, and denied authenticated writes.
+  - Acceptance: `supabase test db` fails naming the missing tables/contracts before the migration applies.
+
+- [x] **1b.2 Implement host-mapping migration.** Use `supabase migration new host_workspace_mappings`; add tables, constraints, indexes, RLS policies, and SELECT grants only.
+  - Acceptance: catalog and behavior tests for mappings pass; authenticated INSERT/UPDATE/DELETE fail by privilege; service/migration owner can seed a mapping for a workspace.
+
+- [x] **1b.3 Verify Work Unit 1b.** Reset from empty state and run the full database suite.
+  - Acceptance: `supabase db reset` and `supabase test db` exit 0 with WU1 + WU1b contracts green.
+
 ## Work Unit 2: Pure Domain Layer
 
 - [ ] **2.1 Write RED Vitest contracts for limits and base schemas.** Cover entity/workspace/property/relationship limits, JSON object requirements, UUIDs, enum values, and idempotency key `^[!-~]{1,256}$` parity.
@@ -88,13 +101,16 @@ Each implementation task below has an observable acceptance condition. Tests and
 - [ ] **3.8 Implement the authenticated workspace shell.** Add root layout/styles and `[workspaceSlug]` layout/page; resolve membership in server code through RLS.
   - Acceptance: an authenticated member can load their workspace; a nonmember gets non-disclosing not-found/forbidden behavior even if Proxy allowed the request.
 
-- [ ] **3.9 Configure the Next.js 16/Tailwind 4 toolchain.** Add `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`, `vitest.config.ts`, scripts, and `@import "tailwindcss"`.
+- [ ] **3.9 Implement host resolution wiring.** Resolve request host via `domain_mappings` + `workspace_settings`; pre-auth path returns only safe public presentation fields through a server-only secret path; authenticated layout re-resolves through RLS; host alone never authorizes; document Cloudflare DNS → Vercel hostname checklist.
+  - Acceptance: a mapped host loads the member workspace experience; unknown host or nonmember yields non-disclosing failure; no anon table grants; secrets never appear in `workspace_settings` or pre-auth payloads.
+
+- [ ] **3.10 Configure the Next.js 16/Tailwind 4 toolchain.** Add `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`, `vitest.config.ts`, scripts, and `@import "tailwindcss"`.
   - Acceptance: no `next lint` script and no unnecessary `tailwind.config.ts`; Node engine is `>=20.9`; lint, typecheck, test, and build scripts are separate.
 
-- [ ] **3.10 Document repository conventions.** Add/update `AGENTS.md` with the trust boundaries, `private` function rule, RLS/write model, idempotency semantics, Next.js 16 Proxy convention, and local docs-first requirement.
+- [ ] **3.11 Document repository conventions.** Add/update `AGENTS.md` with the trust boundaries, `private` function rule, RLS/write model, idempotency semantics, Next.js 16 Proxy convention, Cloudflare→Vercel domain flow, and local docs-first requirement.
   - Acceptance: a reviewer can locate every required convention by heading or search term and no text recommends `middleware.ts`, legacy anon/service-role keys as the default, or public definer functions.
 
-- [ ] **3.11 Verify Work Unit 3 and full slice.** Run all quality and database gates from a clean state.
+- [ ] **3.12 Verify Work Unit 3 and full slice.** Run all quality and database gates from a clean state.
   - Acceptance: `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`, `supabase db reset`, and `supabase test db` all exit 0 independently; browser artifact inspection finds no secret key.
 
 ## Deferred Work
@@ -102,5 +118,5 @@ Each implementation task below has an observable acceptance condition. Tests and
 - Integration/E2E flow tests beyond this app-shell slice
 - Entity update/delete, membership management, and workspace-management RPCs
 - Events, sources, evidence, memories, context packs, `ai_runs`, embeddings/pgvector, and access policies (RFC 0004: after first production client use)
-- Host-based workspace resolution and customer frontend domains — see `openspec/changes/host-workspace-resolution/`
+- Per-customer OAuth callbacks on customer domains (central app auth first)
 - UUIDv7 and generated-column optimization decisions
