@@ -1,11 +1,12 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Next.js (App Router), React 19, Supabase (Postgres + Auth + Storage), TypeScript strict, Tailwind CSS 4
+  Tech stack: Next.js (App Router), React 19, Supabase managed backend (Auth + Postgres + RLS + Storage + Edge Functions), TypeScript strict, Tailwind CSS 4, Vercel hosting
   Domain: decimal.js (money), Zod 4 (validation)
   Testing: Vitest + happy-dom (unit/integration), pgTAP (database), Playwright (E2E)
   Architecture: Clean/Hexagonal — pure domain layer (src/domain/) with zero React/Supabase/Next deps
-  Patterns: three Supabase clients (SSR/Browser/Admin), RLS + service_role RPC writes, trigger-based provisioning, channel-separated capabilities, dedupe via SHA-256 + advisory lock
+  Patterns: one Next.js multi-workspace app on Vercel, three Supabase clients (SSR/Browser/Admin), RLS + authenticated SECURITY INVOKER RPC writes with SQL membership authorization, trigger-based provisioning, slug-based workspace resolution, channel-separated capabilities, dedupe via SHA-256 + advisory lock
+  Delivery: RFC 0004 — build for 1 / template for 10; critical path WU2–WU3; AI infra deferred; one optional stateless wedge AI feature allowed
   DB row decoders: runtime Zod validation on every DB read
 
 rules:
@@ -22,10 +23,12 @@ rules:
     - Keep tasks completable in one session
   apply:
     - Follow existing code patterns from invoicesAUD sibling project
-    - Three Supabase clients: Server (SSR), Browser (auth only), Admin (service-role, server-only)
-    - RLS: authenticated SELECT only, all writes via service_role RPC functions
+    - Supabase is the managed backend: Auth, Postgres, RLS, Storage, Edge Functions, and Cron/jobs when applicable; pgvector is a future evolution after first production client use (RFC 0004)
+    - Vercel hosts the single Next.js multi-workspace app; customer frontend domains are never Supabase custom domains and are deferred to host-workspace-resolution until required
+    - Three Supabase clients: Server (SSR), Browser (auth only), Admin (secret key, server-only)
+    - RLS: authenticated reads are membership-filtered; user writes use SECURITY INVOKER RPC wrappers with SQL membership authorization; service_role/server-only operations are limited to provisioning and trusted jobs
     - Idempotency: UUID key + SHA-256 fingerprint + pg_advisory_xact_lock
-    - Middleware session refresh, open redirect prevention, cookie security (SameSite=Lax)
+    - Next.js 16 proxy.ts session refresh (not middleware.ts), open redirect prevention, cookie security (SameSite=Lax)
     - Limits duplicated in domain AND database CHECK constraints
     tdd: true
     test_command: "npx vitest run"

@@ -101,5 +101,6 @@ Each implementation task below has an observable acceptance condition. Tests and
 
 - Integration/E2E flow tests beyond this app-shell slice
 - Entity update/delete, membership management, and workspace-management RPCs
-- Events, sources, evidence, memories, context packs, and access policies
+- Events, sources, evidence, memories, context packs, `ai_runs`, embeddings/pgvector, and access policies (RFC 0004: after first production client use)
+- Host-based workspace resolution and customer frontend domains — see `openspec/changes/host-workspace-resolution/`
 - UUIDv7 and generated-column optimization decisions

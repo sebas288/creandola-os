@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Create the smallest secure foundation on which later Context Engine changes can build: a Next.js 16 application shell, Supabase authentication and tenancy, the Phase 1 canonical entity schema, typed data-access boundaries, and pure domain validation.
+Create the smallest secure foundation on which later Context Engine changes can build: a Next.js 16 application shell, Supabase authentication and tenancy, the Phase 1 canonical entity schema, typed data-access boundaries, and pure domain validation. Delivery order follows [RFC 0004 — Delivery Strategy](../../../docs/rfcs/0004-delivery-strategy.md): finish WU2–WU3 before host resolution, AI infrastructure, or other platform expansion.
 
 ## Scope
 
@@ -21,10 +21,11 @@ Create the smallest secure foundation on which later Context Engine changes can 
 
 ### Out of Scope
 
-- `events`, `sources`, `evidence`, `memories`, `documents`, `context_packs`, and `access_policies` tables
+- `events`, `sources`, `evidence`, `memories`, `documents`, `context_packs`, `ai_runs`, and `access_policies` tables
 - Provenance foreign keys such as `source_id`
 - Entity update/delete RPCs, membership management, and workspace creation outside initial provisioning
-- WhatsApp, email, AI/embeddings, dashboards, metrics, external integrations, and file assets
+- Host-based workspace resolution: `domain_mappings`, `workspace_settings`, pre-auth host resolver, and customer frontend domains (deferred to `openspec/changes/host-workspace-resolution/`)
+- WhatsApp, email, AI infrastructure / embeddings / pgvector, dashboards, metrics, external integrations, and file assets
 - Full integration or browser E2E coverage beyond the app-shell smoke checks
 
 ## Capabilities

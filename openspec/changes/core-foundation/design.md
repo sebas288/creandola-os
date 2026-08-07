@@ -2,19 +2,38 @@
 
 ## Architecture Summary
 
+Creándola OS is one managed, multi-workspace platform. Vercel hosts the single Next.js application and Supabase provides the managed backend. Clerk, self-managed VPS, production Docker, manual backups, reverse proxies, manually managed SSL, and server-security operations are not part of the architecture.
+
+If a Supabase Custom Domain is used, it is one platform backend domain such as `api.somoscreandola.co` for Creándola OS API/Auth/Storage, never one domain per customer. Customer frontend domains (when needed later) are configured in Vercel and are out of scope for this change; see `openspec/changes/host-workspace-resolution/`.
+
 The foundation has three trust boundaries:
 
 ```text
 Browser / Server Component
   -> Next.js Proxy refreshes and validates the session optimistically
   -> authenticated server layout resolves workspace through RLS
-  -> public SECURITY INVOKER RPC wrapper
+  -> authenticated SECURITY INVOKER RPC wrapper
   -> private SECURITY DEFINER implementation re-checks membership and writes
 ```
 
-RLS protects reads from public clients. Direct table writes are not granted to `anon` or `authenticated`. Cross-workspace integrity is enforced by constraints, not only policies.
+RLS protects exposed-table reads. Direct table writes are not granted to `anon` or `authenticated`; user writes go through authenticated `SECURITY INVOKER` wrappers whose SQL membership checks are authoritative. Cross-workspace integrity is enforced by constraints, not only policies. The admin / secret-key client remains server-only and is limited to provisioning, trusted jobs, and other explicitly trusted system work.
+
+Delivery order and product wedge constraints are governed by [RFC 0004 — Delivery Strategy](../../../docs/rfcs/0004-delivery-strategy.md). Later Context Engine inventory (events, memories, embeddings, and related tables) is documented in RFC 0003 and is not part of this change.
 
 ## Database Design
+
+### Managed Infrastructure Boundary
+
+| Concern | Managed platform decision |
+|---------|---------------------------|
+| Frontend hosting | Vercel hosts one Next.js multi-workspace app |
+| Authentication | Supabase Auth; Clerk is not used |
+| Relational data and tenant isolation | Supabase Postgres with Row Level Security (RLS) |
+| Files | Supabase Storage |
+| Server-side workflows | Supabase Edge Functions; Supabase Cron/jobs when a scheduled task applies |
+| Semantic search | pgvector may be enabled later if the product requires it (RFC 0004: after first production client use) |
+| Backend custom domain | Optional single Supabase Custom Domain for the Creándola OS backend, such as `api.somoscreandola.co` |
+| Server operations excluded | No self-managed VPS, production Docker, manual backup process, reverse proxy, manual SSL, or server-security layer |
 
 ### Schemas and Enums
 
@@ -56,7 +75,7 @@ The GIN indexes use `jsonb_path_ops` and therefore target containment queries su
 
 | Object | `anon` | `authenticated` | Privileged backend |
 |--------|--------|-----------------|--------------------|
-| Public tables | No table privileges | SELECT only, filtered by RLS | Supabase secret key remains fully privileged and server-only |
+| Public tables | No table privileges | SELECT only, filtered by RLS | Supabase secret key remains fully privileged and server-only; use only for provisioning and trusted jobs |
 | `public.create_entity` | No EXECUTE | EXECUTE | Not the default user path |
 | `private.current_user_workspace_ids` | No EXECUTE | EXECUTE for policy evaluation | Owner |
 | `private.provision_user` | No direct EXECUTE | No direct EXECUTE | Owner only; pgTAP invokes it as the migration/test owner |
@@ -109,7 +128,7 @@ public.create_entity(
 ) returns uuid
 ```
 
-The public function is `SECURITY INVOKER` and contains no privileged table access other than delegating to the private implementation.
+The public function is `SECURITY INVOKER` and contains no privileged table access other than delegating to the private implementation. User writes are authorized by SQL membership checks in the implementation; `service_role` is not the normal user-write path.
 
 ### Authorization
 
@@ -214,7 +233,7 @@ It MUST:
 - exclude static assets and metadata from its matcher; and
 - redirect unauthenticated protected paths to `/login` with a validated relative return path.
 
-It MUST NOT query workspace tables, authorize membership, or accept a client-supplied workspace ID header as trusted state. The `[workspaceSlug]` server layout performs the authoritative RLS-backed lookup and returns not-found/forbidden behavior when inaccessible.
+It MUST NOT query the workspace database or accept a client-supplied workspace ID header as trusted state. The `[workspaceSlug]` server layout performs the authoritative RLS-backed lookup and returns not-found/forbidden behavior when inaccessible.
 
 ### Cookies and Redirects
 
