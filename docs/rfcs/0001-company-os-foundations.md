@@ -1,227 +1,178 @@
 # RFC 0001 — Company OS Foundations
 
-Status: Draft v1  
-Date: 2026-06-28  
+Status: Draft v2  
+Date: 2026-08-07  
 Owner: Creándola  
-Scope: Strategic/product foundation  
-Decision type: Foundational architecture
+Scope: Strategic/product foundation and operating model  
+Decision type: Foundational architecture  
+Supersedes: Draft v1 (2026-06-28) — same document path; narrative reframed around service delivery
 
 ---
 
 ## 1. Executive summary
 
-Company OS is the internal product vision Creándola will use to design, validate, and eventually implement a company intelligence layer for service businesses.
+Creándola OS (Company OS) is the internal product/technology layer under Creándola. It is a shared company intelligence system whose core is a **Context Engine**.
 
-The goal is **not** to create a new public brand right now. Creándola remains the public company, service provider, and commercial relationship. Creándola OS remains the internal/product technology layer under Creándola.
+The commercial and operating thesis is:
 
-The strategic thesis is:
+> The real opportunity is not self-serve software for SMEs.
+> It is human service + agents on top of a shared operating system.
+> Colombian SMEs still need someone to interpret, decide, and present — not only a tool.
 
-> Company OS is not a collection of business modules. It is a company intelligence system whose core is a Context Engine: a layer that connects tools, knowledge, decisions, processes, clients, metrics, and memory so a business can understand itself and operate better.
+The technical thesis remains:
 
-The product should not start by replacing tools like Notion, HubSpot, Figma, GitHub, Google Drive, WhatsApp, Slack, Stripe, or Linear. Instead, it should connect them and add context.
+> Company OS is not a collection of business modules. It is a Context Engine that connects tools, knowledge, decisions, processes, clients, metrics, and memory so a business can understand itself and operate better.
 
-The first product asset is not code. The first product asset is the model: the ontology, relationships, events, states, memory rules, and design principles that define how a company is represented inside the system.
+Creándola remains the public brand, service provider, and commercial relationship. Company OS is not a new public brand. The first product asset is still the model (ontology, relationships, events, memory rules) — now delivered as substrate for **service**, not as a standalone SME product.
+
+Related specs (do not duplicate here):
+
+- [RFC 0002](0002-company-ontology-v1.md) — ontology
+- [RFC 0003](0003-context-engine-data-model.md) — data model
+- [RFC 0004](0004-delivery-strategy.md) — delivery order and wedge constraints (**Accepted**)
 
 ---
 
-## 2. Background
+## 2. Operating model: three layers
 
-Creándola started from a service-business reality:
+```txt
+Delivery     → Creándola operators + agents (interpret, decide, present)
+Workspace    → Tenant boundary (workspace_id, memberships, RLS, host/slug)
+Shared OS    → One app, one schema, Phase 1 wedge, Context Engine services
+```
 
-- clients need design and software,
-- but they also need strategy,
-- operational clarity,
-- documentation,
-- marketing improvement,
-- sales follow-up,
-- process management,
-- automation,
-- and increasingly AI support.
+| Layer | What it is | How it reuses |
+|-------|------------|---------------|
+| **Shared OS** | One Next.js app, one Postgres schema, shared wedge capabilities | Same code for every client |
+| **Workspace** | Operating account for a company/client | Isolated data; config and content differ |
+| **Delivery** | Humans + agents working in that workspace | Same playbooks; judgment and outputs differ |
 
-This means Creándola should not position itself only as a software development company. The stronger positioning is:
+Customization for a client is **configuration, content, and service delivery** inside the wedge — not a new codebase, not a per-vertical product fork, not a monorepo package per SME.
+
+Engineering implication (locked by RFC 0004):
+
+> One product, one schema, one app. Workspace isolation is the multi-tenant boundary.
+
+---
+
+## 3. Human vs agents in the wedge
+
+### 3.1 What the human owns (non-negotiable)
+
+In every workspace, a Creándola operator (or a designated client owner with Creándola support) owns:
+
+1. **Interpret** — turn notes, meetings, and documents into meaning for that business.
+2. **Decide** — approve decisions, priorities, and next actions that affect the client.
+3. **Present** — deliver status, recommendations, and artifacts the client can act on.
+
+The OS stores and retrieves context. It does not replace professional judgment for legal, financial, or relationship-sensitive work (e.g. early pilots such as a legal practice or accounting firm).
+
+### 3.2 What agents may do
+
+Agents (and any early wedge AI feature per RFC 0004) may assist **inside a workspace** when they:
+
+| Allowed | Not allowed (yet) |
+|---------|-------------------|
+| Draft summaries from existing entities | Autonomous decisions without human approval |
+| Suggest tasks, titles, or document outlines | Cross-workspace data access |
+| Retrieve and rephrase workspace context for an operator | Context Engine AI infrastructure (memories, embeddings, `ai_runs`) before production use — see RFC 0004 |
+| Stateless LLM calls over the current entity graph | “Fully autonomous agent” product positioning |
+
+Default rule:
+
+> **Agent drafts; human commits.**
+
+Writes that change canonical entities require an explicit human action in the product or an approved operator workflow.
+
+### 3.3 Sequence (unchanged principle)
+
+```txt
+Memory → Context → Search → Recommendations → Automation → Agents
+```
+
+AI may summarize, extract, classify, and draft early. Autonomous agents wait until trusted context, permissions, and validated workflows exist.
+
+---
+
+## 4. Background and positioning
+
+Creándola started from a service-business reality: clients need design and software, but also strategy, operational clarity, documentation, follow-up, process management, and increasingly AI support.
+
+Stronger positioning:
 
 > Creándola helps businesses order and improve their operation with strategy, design, technology, documentation, and AI.
 
-Previous documents defined a horizontal-first operating model:
+Creándola horizontals remain the practical operating layer:
 
-- Captación
-- Calificación
-- Seguimiento / CRM
-- Atención / WhatsApp
-- Documentación
-- Procesos internos
-- Automatización
-- Analítica / reportes
+```txt
+Captación · Calificación · Seguimiento / CRM · Atención / WhatsApp
+Documentación · Procesos internos · Automatización · Analítica / reportes
+```
 
-Those horizontals remain valid. This RFC places them inside a larger architecture: Company OS.
+Company OS gives those horizontals deeper context. It does not replace them with ten vertical software products.
 
 ---
 
-## 3. Naming and brand decisions
+## 5. Naming and brand
 
-### 3.1 Public brand
+| Concern | Decision |
+|---------|----------|
+| Public brand | Somos Creándola (`somoscreandola.co`) |
+| Product/tech layer | Creándola OS — internal under Creándola |
+| Vision name | Company OS — internal architecture name only |
+| Category | Company Intelligence Platform |
+| Core mechanism | Context Engine |
 
-The public brand remains:
+Do not create a new brand, landing, legal entity, or public GTM around Company OS yet.
 
-```txt
-Somos Creándola
-```
-
-Public domain:
-
-```txt
-somoscreandola.co
-```
-
-### 3.2 Internal/product engine
-
-Creándola OS remains:
-
-```txt
-Internal/product engine under Creándola
-```
-
-It should not be positioned as a competing public company on the main Creándola landing.
-
-### 3.3 Product vision name
-
-For now, **Company OS** is an internal product vision and architecture name.
-
-Do not create a new brand, landing, legal entity, or public go-to-market around it yet.
-
-### 3.4 Category language
-
-Strategic category:
-
-```txt
-Company Intelligence Platform
-```
-
-Core value mechanism:
-
-```txt
-Context Engine
-```
-
-Potential commercial phrasing later:
-
-```txt
-El cerebro digital de tu empresa.
-```
-
-Grounded phrasing:
-
-```txt
-Todo lo importante de tu empresa, conectado y accionable.
-```
+Grounded phrasing when needed later: *Todo lo importante de tu empresa, conectado y accionable.*
 
 ---
 
-## 4. What Company OS is
+## 6. What Company OS is
 
-Company OS is a company intelligence system that connects the operational memory of a business.
-
-It should help answer questions like:
+A company intelligence system that connects the operational memory of a business. It should help answer:
 
 - What did we decide about this client?
-- Why did we launch this campaign?
-- Which feedback created this feature?
-- Which process keeps breaking?
 - What tasks came from the last meeting?
-- Which client requests are repeating?
 - Which documents explain this process?
-- What changed after a release, campaign, or operational improvement?
+- Which client requests are repeating?
 - Where are we losing leads, time, or context?
 
-Company OS should make a business easier to understand, operate, improve, and eventually automate.
+It should make a business easier to understand, operate, improve, and eventually automate — **with humans still owning interpretation, decision, and presentation**.
 
 ---
 
-## 5. What Company OS is not
+## 7. What Company OS is not
 
-Company OS is not initially:
-
-- a replacement for Notion,
-- a replacement for HubSpot,
-- a replacement for Monday or ClickUp,
-- a replacement for Jira or Linear,
-- a replacement for Figma,
-- a replacement for GitHub,
-- a replacement for Google Drive,
-- an ERP,
-- a CRM-only tool,
-- a wiki-only tool,
-- an AI agent platform with no context,
-- a dashboard that only displays metrics,
-- a generic project management app.
-
-Company OS should not compete directly with mature tools in their primary category.
+Not initially: a Notion/HubSpot/Linear/Figma/GitHub/Drive replacement; an ERP; a CRM-only tool; a wiki-only tool; an AI agent platform with no context; a metrics-only dashboard; a generic PM app; a self-serve SME SaaS that replaces Creándola’s service relationship.
 
 Instead:
 
-> It connects tools, captures context, preserves decisions, and helps the company act on what it knows.
+> It connects tools, captures context, preserves decisions, and helps operators and clients act on what the company knows.
 
 ---
 
-## 6. Core thesis
+## 8. Core thesis: fragmented context
 
-Most companies do not only suffer from lack of tools. They suffer from lack of connected context.
+Most companies do not only suffer from lack of tools. They suffer from lack of connected context — WhatsApp, email, Drive, meetings, notes, contracts, and founder memory.
 
-They have information in:
-
-- WhatsApp,
-- email,
-- Drive,
-- Figma,
-- GitHub,
-- spreadsheets,
-- CRM,
-- meetings,
-- notes,
-- invoices,
-- contracts,
-- conversations,
-- memory of the founder.
-
-The problem is not that information does not exist. The problem is that information is fragmented, unlinked, and rarely converted into organizational memory.
-
-Company OS exists to turn scattered information into actionable context.
+Company OS exists to turn scattered information into actionable context **so service delivery can scale without inventing a new product per client**.
 
 ---
 
-## 7. The central concept: Context Engine
+## 9. Context Engine
 
-### 7.1 Why not just “Knowledge Graph”
-
-A knowledge graph describes an implementation pattern.
-
-A Context Engine describes user value.
+### 9.1 Why not only “Knowledge Graph”
 
 ```txt
 Knowledge Graph = how information may be structured internally
 Context Engine = the system that understands why information matters
 ```
 
-The graph matters, but the value is context.
+### 9.2 What it must understand
 
-### 7.2 What the Context Engine must understand
-
-The Context Engine should not only know that objects are connected.
-
-It should know:
-
-- why something exists,
-- who requested it,
-- what problem it solved,
-- what decision created it,
-- what evidence supported it,
-- what changed because of it,
-- what is still unresolved,
-- who is responsible,
-- what should happen next,
-- which metric or outcome it affects.
-
-Example:
+Not only that objects are connected, but why something exists, who requested it, what decision created it, what evidence supported it, what is unresolved, who is responsible, and what should happen next.
 
 ```txt
 Weak graph:
@@ -230,667 +181,106 @@ Campaign A → Feature B → Feedback C
 Context Engine:
 Campaign A was created because Segment X repeatedly asked for Problem Y.
 Feature B was prioritized after Decision D in Meeting M.
-Feedback C showed that the message was unclear.
 The next action is to update the offer page and measure conversion for 30 days.
 ```
 
+Detail: RFC 0002 (ontology), RFC 0003 (data model).
+
 ---
 
-## 8. Architecture overview
+## 10. Architecture overview
 
 ```txt
 Company OS
 │
-├── Context Engine
-│   ├── Knowledge
-│   ├── Graph
-│   ├── Memory
-│   ├── Events
-│   ├── Search
-│   ├── Files
-│   ├── Permissions
-│   ├── Analytics
-│   ├── Notifications
-│   └── AI
+├── Context Engine (shared services)
+│   Knowledge · Graph · Memory · Events · Search · Files
+│   Permissions · Analytics · Notifications · AI
 │
-├── Operating Domains
-│   ├── Brand
-│   ├── Marketing
-│   ├── Sales
-│   ├── Customer
-│   ├── Product
-│   ├── Design
-│   ├── Finance
-│   ├── Operations
-│   └── HR
+├── Operating Domains (views over the same engine)
+│   Brand · Marketing · Sales · Customer · Product
+│   Design · Finance · Operations · HR
 │
 └── External Integrations
-    ├── GitHub
-    ├── Figma
-    ├── Google Workspace
-    ├── Drive
-    ├── WhatsApp
-    ├── Slack
-    ├── Stripe
-    ├── HubSpot
-    ├── Meta
-    └── Other tools
+    GitHub · Figma · Google Workspace · WhatsApp · Slack · Stripe · …
 ```
 
-### 8.1 Core services are not modules
-
-Knowledge, search, analytics, permissions, memory, files, notifications, AI, and graph capabilities should be core services, not independent modules competing for attention.
-
-They support every operating domain.
-
-### 8.2 Operating domains are business surfaces
-
-Operating domains are where users recognize their work:
-
-- Brand
-- Marketing
-- Sales
-- Customer
-- Product
-- Design
-- Finance
-- Operations
-- HR
-
-These domains should not become isolated silos. Every domain should use the same Context Engine.
+Core services are **not** competing modules. Operating domains are business surfaces over one Context Engine. Integrations pull context before replacing tools.
 
 ---
 
-## 9. Design principles
+## 11. Design principles
 
-### Principle 1 — Context before automation
-
-Do not automate workflows that are not understood.
-
-Sequence:
-
-```txt
-Memory → Context → Search → Recommendations → Automation → Agents
-```
-
-### Principle 2 — Integrate before replacing
-
-Do not start by replacing tools. Start by connecting them.
-
-### Principle 3 — Services before modules
-
-Knowledge, search, graph, permissions, analytics, memory, and AI are shared services.
-
-### Principle 4 — Human judgment first
-
-The system should augment strategic and operational judgment, not hide it behind blind automation.
-
-### Principle 5 — Every object needs provenance
-
-The system should preserve where information came from:
-
-- source,
-- author,
-- date,
-- related client/project,
-- confidence,
-- evidence,
-- decisions produced.
-
-### Principle 6 — Every decision should become memory
-
-A decision without context becomes repeated confusion.
-
-### Principle 7 — No software before validated workflow
-
-If the workflow has not been validated manually or semi-manually, document it before building it.
-
-### Principle 8 — Reuse before invention
-
-Before creating a new capability, check whether it belongs to an existing horizontal, domain, workflow, entity, event, or relationship.
-
-### Principle 9 — AI basic from day one, autonomous later
-
-AI can summarize, extract, classify, and retrieve early.
-
-Autonomous agents should wait until the system has enough trusted context, permissions, and event history.
-
-### Principle 10 — The model is an asset
-
-The ontology, relationships, events, and memory rules are not implementation details. They are strategic assets.
+1. **Context before automation** — do not automate workflows that are not understood.
+2. **Integrate before replacing** — connect tools first.
+3. **Services before modules** — shared Context Engine services.
+4. **Human judgment first** — augment; do not hide judgment behind blind automation.
+5. **Service before self-serve software** — validate through delivery; OS is substrate.
+6. **Every object needs provenance** — source, author, date, evidence, decisions produced.
+7. **Every decision should become memory** — decisions without context become repeated confusion.
+8. **No software before validated workflow** — document before building.
+9. **Reuse before invention** — prefer horizontals and existing entities over new vertical packages.
+10. **AI assist early, autonomous later** — agent drafts; human commits.
+11. **The model is an asset** — ontology and memory rules are strategic, not incidental.
 
 ---
 
-## 10. Company ontology: first model
+## 12. Ontology and data model (pointers)
 
-The root question is:
+Full ontology: **RFC 0002**. Canonical data model and tenancy: **RFC 0003**.
 
-> What is a company inside this system?
+A company is modeled as actors, assets, processes, decisions, events, and outcomes connected over time. Relationships carry context; events make the system temporal; memory preserves useful context with provenance and scope.
 
-A company is modeled as a set of actors, assets, processes, decisions, events, and outcomes connected over time.
-
-### 10.1 Core entity groups
-
-#### Organization entities
+Phase 1 wedge entities (also RFC 0004):
 
 ```txt
-Company
-Team
-Role
-Person
-Client
-Contact
-Partner
-Vendor
-```
-
-#### Work entities
-
-```txt
-Project
-Task
-Workflow
-Process
-SOP
-Checklist
-Automation
-```
-
-#### Commercial entities
-
-```txt
-Lead
-Opportunity
-Proposal
-Contract
-Invoice
-Payment
-Offer
-Segment
-```
-
-#### Product/design entities
-
-```txt
-Product
-Feature
-RoadmapItem
-Release
-DesignFile
-Component
-Asset
-```
-
-#### Brand/marketing entities
-
-```txt
-Brand
-Campaign
-Channel
-ContentPiece
-Ad
-LandingPage
-Message
-Audience
-```
-
-#### Knowledge entities
-
-```txt
-Document
-Note
-Meeting
-Decision
-Learning
-Research
-Experiment
-Question
-Answer
-```
-
-#### Customer entities
-
-```txt
-Feedback
-Ticket
-Request
-NPSResponse
-Testimonial
-CaseStudy
-```
-
-#### Measurement entities
-
-```txt
-Metric
-KPI
-Objective
-KeyResult
-Report
-Insight
-```
-
-#### AI entities
-
-```txt
-Prompt
-Agent
-Model
-Memory
-ContextPack
-Evaluation
+Clients · Projects · Meetings · Decisions · Tasks · Documents
 ```
 
 ---
 
-## 11. Relationships
+## 13. Search, permissions, AI (summary)
 
-Relationships define context.
+**Search** evolves: exact → semantic → contextual answers → recommendations.
 
-Initial relationship examples:
+**Permissions** must not assume global visibility. Early versions can be simple; the model must support workspace/company/client/project/role boundaries (workspace isolation is already the multi-tenant boundary in implementation).
 
-```txt
-Client has Contact
-Project belongs_to Client
-Person owns Task
-Task relates_to Project
-Meeting produced Decision
-Decision created Task
-Task implements Decision
-Document describes Process
-Process uses Checklist
-Automation handles Workflow
-Campaign promotes Offer
-ContentPiece belongs_to Campaign
-LandingPage captures Lead
-Lead becomes Opportunity
-Opportunity receives Proposal
-Proposal becomes Contract
-Invoice bills Client
-Feedback requests Feature
-Feature belongs_to Product
-Feature appears_in Release
-Release impacts Metric
-Metric measures Objective
-Research supports Decision
-Prompt used_by Agent
-Agent acts_on Workflow
-ContextPack includes Document
-```
+**AI** early: summaries, extraction, classification, draft generation, meeting/task extraction, report drafts — always workspace-scoped and human-committed for canonical writes.
 
-### Relationship metadata
+**AI later:** autonomous agents only after entities, relationships, events, permissions, and workflow validation are trusted (and after RFC 0004 unblocks Context Engine AI infrastructure).
 
-Every relationship should eventually support metadata:
-
-```txt
-source
-created_at
-created_by
-confidence
-valid_from
-valid_to
-evidence
-notes
-```
+Use cheap models for extraction; reserve expensive models for hard reasoning. Do not use expensive models for every task.
 
 ---
 
-## 12. Events
+## 14. MVP wedge and workflow
 
-Events are what make the system temporal.
-
-Without events, the system only stores static information.
-
-Initial event examples:
+Do not model the entire company first. Start with the wedge above.
 
 ```txt
-lead.created
-lead.qualified
-meeting.scheduled
-meeting.completed
-decision.made
-task.created
-task.assigned
-task.completed
-proposal.sent
-contract.signed
-invoice.sent
-invoice.paid
-feedback.received
-feature.requested
-release.shipped
-metric.changed
-document.created
-document.updated
-process.documented
-automation.triggered
-campaign.launched
-campaign.ended
-report.generated
+1. A meeting/note/document enters (often via operator or assisted capture).
+2. The system (or agent draft) extracts entities.
+3. Decisions, tasks, risks, and open questions are identified.
+4. They link to client/project.
+5. They become searchable in the workspace.
+6. Next actions are proposed (draft).
+7. A human commits and presents a simple report to the client.
 ```
 
-### Event requirements
-
-Every event should eventually include:
-
-```txt
-event_id
-event_type
-timestamp
-actor
-entity
-related_entities
-source
-data
-summary
-```
-
----
-
-## 13. Memory
-
-Memory is the system’s ability to preserve useful context over time.
-
-### 13.1 Memory types
-
-```txt
-Strategic memory
-Operational memory
-Client memory
-Product memory
-Brand memory
-Decision memory
-Process memory
-AI memory
-```
-
-### 13.2 Memory rules
-
-Memory should be:
-
-- source-backed,
-- scoped,
-- permission-aware,
-- updatable,
-- explainable,
-- linked to entities and events.
-
-### 13.3 What should become memory
-
-Good memory candidates:
-
-- strategic decisions,
-- recurring client preferences,
-- process rules,
-- lessons learned,
-- common objections,
-- repeated feature requests,
-- operating constraints,
-- validated patterns,
-- recurring risks.
-
-Bad memory candidates:
-
-- temporary task state,
-- unverified assumptions,
-- raw transcripts without summary,
-- secrets,
-- credentials,
-- private data without purpose,
-- stale implementation details.
-
----
-
-## 14. Search and retrieval
-
-Search should evolve in layers:
-
-### Layer 1 — Exact search
-
-Find known docs, clients, tasks, decisions, notes, and records.
-
-### Layer 2 — Semantic search
-
-Find conceptually related material even when words differ.
-
-### Layer 3 — Contextual answers
-
-Answer questions with references:
-
-```txt
-Question: ¿Qué decidimos sobre el onboarding?
-Answer: Summary + linked decisions + meetings + tasks + docs.
-```
-
-### Layer 4 — Recommendations
-
-Suggest next actions based on context:
-
-```txt
-This lead has no next action.
-This process has repeated failures.
-This feature request appears in three clients.
-This campaign produced leads but no proposals.
-```
-
----
-
-## 15. Permissions
-
-Permissions cannot be an afterthought.
-
-The system will eventually contain sensitive company context.
-
-Permission dimensions:
-
-```txt
-workspace
-company
-client
-project
-domain
-entity type
-field
-source
-role
-actor
-```
-
-Early versions can be simple, but the model should not assume everything is globally visible.
-
----
-
-## 16. AI strategy
-
-### 16.1 AI from the beginning
-
-AI should be used early for:
-
-- summaries,
-- extraction,
-- classification,
-- tagging,
-- search assistance,
-- draft generation,
-- meeting/task extraction,
-- report drafts.
-
-### 16.2 Autonomous AI later
-
-Agents should come later, after:
-
-- entities are clear,
-- relationships are stable,
-- events are captured,
-- permissions exist,
-- context quality is high,
-- workflows are validated.
-
-### 16.3 Model policy
-
-Use model roles:
-
-```txt
-Reasoning/coding model → hard strategy, architecture, product work, code
-Cheap extraction model → classification, summarization, tagging
-Embedding model → retrieval and memory
-Multimodal model → screenshots, documents, visual assets
-```
-
-Do not use expensive models for every task.
-
----
-
-## 17. Operating domains
-
-Operating domains are not separate products at first. They are views and workflows over the same context engine.
-
-### 17.1 Brand
-
-Identity, messaging, assets, campaigns, content, tone, visuals.
-
-### 17.2 Marketing
-
-Channels, campaigns, funnels, SEO, ads, email, content calendar, growth experiments.
-
-### 17.3 Sales
-
-Leads, opportunities, CRM, proposals, follow-up, contracts, renewals.
-
-### 17.4 Customer
-
-Feedback, tickets, requests, NPS, testimonials, community, case studies.
-
-### 17.5 Product
-
-Ideas, backlog, roadmap, features, releases, architecture, testing.
-
-### 17.6 Design
-
-Components, Figma, templates, illustrations, motion, video, design systems.
-
-### 17.7 Finance
-
-Revenue, expenses, cash flow, profitability, budgets, invoices, payments.
-
-### 17.8 Operations
-
-SOPs, processes, checklists, responsibilities, handoffs, automations.
-
-### 17.9 HR
-
-Roles, onboarding, team capacity, responsibilities, vacations, performance context.
-
----
-
-## 18. Integrations
-
-The integration strategy is:
-
-> Pull context from tools without trying to replace them too early.
-
-Initial integration targets should be chosen by validated workflow, not by hype.
-
-Potential integrations:
-
-```txt
-Google Drive / Docs
-Google Calendar
-Gmail
-WhatsApp Business
-GitHub
-Figma
-Slack / Discord
-Stripe / payment tools
-HubSpot / CRM tools
-Meta / Instagram / Ads
-Airtable / Sheets
-```
-
-Each integration should answer:
-
-1. What context does it provide?
-2. Which entities does it create or enrich?
-3. Which events does it emit?
-4. Which decisions or actions can it support?
-5. Does it need write access, or is read-only enough?
-
----
-
-## 19. MVP conceptual wedge
-
-Do not start by modeling the entire company.
-
-Start with:
-
-```txt
-Clients + Projects + Meetings + Decisions + Tasks + Documents
-```
-
-This wedge matches what Creándola already does with clients.
-
-### MVP workflow
-
-```txt
-1. A meeting/note/document enters.
-2. The system extracts entities.
-3. The system identifies decisions, tasks, risks, and open questions.
-4. The system links them to client/project/domain.
-5. The system makes them searchable.
-6. The system proposes next actions.
-7. The system can generate a simple report.
-```
-
-### MVP question examples
+Example questions the wedge must answer:
 
 ```txt
 ¿Qué sabemos de este cliente?
 ¿Qué decidimos en la última reunión?
 ¿Qué tareas salieron de este diagnóstico?
 ¿Qué problemas se repiten entre clientes?
-¿Qué procesos ya están documentados?
-¿Qué oportunidades están sin próxima acción?
 ```
 
 ---
 
-## 20. Relationship with Creándola horizontals
+## 15. Validation strategy
 
-Existing Creándola horizontals remain the practical operating layer:
-
-```txt
-Captación
-Calificación
-Seguimiento / CRM
-Atención / WhatsApp
-Documentación
-Procesos internos
-Automatización
-Analítica / reportes
-```
-
-Company OS gives them deeper context.
-
-Mapping:
-
-```txt
-Captación → Lead, Campaign, LandingPage, Channel, Message
-Calificación → Lead, Opportunity, Score, Need, Segment
-Seguimiento → Task, NextAction, Owner, PipelineState
-WhatsApp → Conversation, Contact, Event, Summary
-Documentación → Document, SOP, Process, Checklist
-Procesos → Workflow, Role, Handoff, Status
-Automatización → Trigger, Action, Automation, Event
-Reportes → Metric, Insight, Report, Recommendation
-```
-
----
-
-## 21. Validation strategy
-
-Creándola should validate Company OS through service delivery before turning it into a standalone software product.
-
-Sequence:
+Validate Company OS through service delivery before treating it as a standalone software product.
 
 ```txt
 Creándola sells services
@@ -903,105 +293,93 @@ Repeated templates become workflows
 ↓
 Repeated workflows become product capabilities
 ↓
-Product capabilities become Creándola OS / Company OS software layer
+Capabilities harden into the Creándola OS layer
+↓
+Operators + agents reuse the same OS across workspaces
 ```
 
-This reduces product risk and keeps the product grounded in real client work.
+This reduces product risk and keeps the product grounded in real client work (internal client-zero and anonymized external pilots).
 
 ---
 
-## 22. What not to build yet
+## 16. What not to build yet
 
 Do not build yet:
 
-- a full dashboard,
-- a full CRM,
-- a full ERP,
-- a full project manager,
-- autonomous agents,
+- full dashboard / CRM / ERP / PM suite,
+- autonomous agents as the product,
 - deep integrations with every tool,
-- complex permissions engine,
-- graph database infrastructure,
-- vector database infrastructure,
-- new public brand,
-- public Company OS landing,
-- vertical product packages before the model is stable.
+- complex permissions beyond workspace membership needs,
+- graph DB or vector DB infrastructure before RFC 0004 allows,
+- new public brand or Company OS landing,
+- vertical product packages (legal OS, accounting OS, …) before the model is stable,
+- monorepo packaging used as a stand-in for per-client capabilities.
 
 Do build/document first:
 
-- ontology,
-- entities,
-- relationships,
-- events,
-- example workflows,
-- decision rules,
-- templates,
-- manual validation processes.
+- ontology and Phase 1 entities,
+- authenticated multi-workspace shell,
+- operator workflows for interpret / decide / present,
+- templates and manual validation,
+- at most one stateless wedge AI assist after the shell works (RFC 0004).
 
 ---
 
-## 23. Build criteria
+## 17. Build criteria
 
-Before building software for any capability, answer:
+Before building software for any capability:
 
-1. Has this workflow been validated manually or semi-manually?
-2. Does it repeat across multiple clients/projects?
-3. Does it save time, improve sales, reduce chaos, improve service quality, or improve decision-making?
-4. Can it become a reusable horizontal capability?
-5. Does it create or enrich context in the Company OS?
-6. Can its value be reported monthly?
+1. Has this workflow been validated manually or semi-manually in delivery?
+2. Does it repeat across multiple clients/workspaces?
+3. Does it save time, improve service quality, or improve decisions?
+4. Can it become a reusable horizontal capability on the shared OS?
+5. Does it create or enrich context?
+6. Can its value be reported in the service relationship?
 7. Can it start with existing tools before custom software?
 
-If most answers are no, document it first.
+If most answers are no, document it first and keep delivering the service.
 
 ---
 
-## 24. Initial RFC roadmap
-
-Recommended next RFCs:
+## 18. RFC map (actual)
 
 ```txt
+RFC 0001 — Company OS Foundations (this document)
 RFC 0002 — Company Ontology v1
 RFC 0003 — Context Engine Data Model
-RFC 0004 — Memory and Provenance Rules
-RFC 0005 — Events and Activity Model
-RFC 0006 — MVP Workflow: Client → Meeting → Decision → Task → Report
-RFC 0007 — Tooling and Integration Strategy
-RFC 0008 — AI Layer: Basic AI Now, Agents Later
+RFC 0004 — Delivery Strategy (Accepted)
 ```
 
----
-
-## 25. Open questions
-
-1. What is the first real client workflow to model end-to-end?
-2. Should the first manual system live in Google Drive, Airtable, Notion, or repo docs?
-3. Which entities are mandatory for v1 and which should wait?
-4. How much client data should enter the system during early validation?
-5. What should be the first measurable outcome: saved time, fewer missed leads, faster documentation, better follow-up, or clearer decisions?
-6. What is the minimum report that proves monthly value?
+Later RFCs may cover deeper memory/provenance rules, events detail, integrations, and AI infrastructure — without contradicting the operating model here or the delivery constraints in RFC 0004.
 
 ---
 
-## 26. Deterministic decisions from this RFC
+## 19. Open questions
 
-This RFC establishes the following decisions:
-
-1. Creándola remains the public brand.
-2. No new brand is created now.
-3. Company OS is an internal product vision, not an immediate public product.
-4. Creándola OS remains the internal/product technology layer under Creándola.
-5. The core concept is **Context Engine**.
-6. The future category is **Company Intelligence Platform**.
-7. Knowledge is a core service, not a module.
-8. AI is a layer over context, not the center of the product.
-9. The first asset is the ontology/model, not code.
-10. The first wedge is clients/projects/meetings/decisions/tasks/documents.
-11. Company OS should integrate existing tools before replacing them.
-12. Autonomous agents come after trusted context, memory, search, events, and permissions.
+1. Who is the default “human committer” per pilot: Creándola operator only, or client owner with Creándola review?
+2. Which single wedge AI assist ships first after WU3 — meeting summary vs assisted drafting (also RFC 0004 §8)?
+3. What is the first measurable outcome of the service+OS loop: saved time, fewer missed follow-ups, clearer decisions, or monthly report quality?
+4. How much client data should enter the system during early validation (privacy-preserving by default in-repo)?
 
 ---
 
-## 27. One-sentence foundation
+## 20. Deterministic decisions from this RFC
 
-> Company OS is Creándola’s internal vision for a company intelligence platform: a Context Engine that connects tools, knowledge, decisions, processes, clients, metrics, and memory so businesses can understand themselves, operate with less chaos, and make better decisions.
+1. Creándola remains the public brand; no new Company OS brand now.
+2. Creándola OS is the internal/product technology layer under Creándola.
+3. The commercial opportunity is **service + agents over a shared OS**, not self-serve SME software alone.
+4. The core technical concept is the **Context Engine**.
+5. Delivery uses three layers: Shared OS / Workspace / Delivery.
+6. Humans own interpret / decide / present; **agent drafts, human commits**.
+7. One product, one schema, one app; workspace isolation is the multi-tenant boundary.
+8. Customization is configuration, content, and service — not vertical codebase forks.
+9. Knowledge and related capabilities are core services, not competing modules.
+10. The first wedge is clients / projects / meetings / decisions / tasks / documents.
+11. Integrate existing tools before replacing them.
+12. Autonomous agents come after trusted context and validated workflows; AI infrastructure follows RFC 0004.
+
+---
+
+## 21. One-sentence foundation
+
+> Company OS is Creándola’s shared operating system for company intelligence — a Context Engine that holds workspace context so Creándola can deliver human service and agent assistance: interpret, decide, and present — without building a separate product for every SME.

@@ -1,8 +1,8 @@
 # Creándola OS
 
-**A company intelligence platform: a Context Engine that connects tools, knowledge, decisions, processes, clients, metrics, and memory so a business can understand itself and operate better.**
+**A shared company intelligence OS: Context Engine substrate for human service + agents — interpret, decide, and present — not a self-serve SME tool alone.**
 
-Creándola OS is not another CRM, not another project manager, not another wiki. It is the operational memory layer for service businesses — the layer that turns scattered information into actionable context.
+Creándola OS is not another CRM, not another project manager, not another wiki. It is the operational memory layer under Creándola’s service delivery: one app, many workspaces, agents that draft, humans that commit.
 
 ## Why this exists
 
@@ -31,7 +31,8 @@ The Context Engine doesn't just know that objects are connected — it knows:
 |---|---|
 | Context before automation | Don't automate workflows you don't understand. Memory → Context → Search → Recommendations → Automation → Agents |
 | Integrate before replacing | Start by connecting existing tools, not by replacing them |
-| Human judgment first | The system augments strategic judgment, it doesn't hide it behind blind automation |
+| Human judgment first | Agent drafts; human commits. Interpret / decide / present stay with operators |
+| Service before self-serve | Validate through delivery; the OS is substrate, not a vertical product per SME |
 | Every object needs provenance | Source, author, date, confidence, evidence, and the decisions it produced |
 | Every decision becomes memory | A decision without context becomes repeated confusion |
 | The model is an asset | The ontology, relationships, events, and memory rules are strategic assets, not implementation details |
@@ -80,11 +81,11 @@ Key decisions:
 
 ## Validation approach
 
-Creándola OS is validated through real service delivery before it becomes standalone software — the "dogfooding" path:
+Creándola OS is validated through real service delivery before it becomes standalone software (RFC 0001):
 
 1. Creándola sells services → client work produces notes, decisions, tasks, and patterns
 2. Patterns become templates → repeated templates become workflows
-3. Workflows become product capabilities → capabilities become Creándola OS
+3. Workflows become product capabilities → operators + agents reuse the same OS across workspaces
 
 Real-world pilots have shaped the model:
 
@@ -122,4 +123,4 @@ Early-stage platform under active development. The foundation is real, tested, a
 
 ---
 
-*Creándola OS is the internal product/technology layer of Creándola — built to be proven first in the company's own operation and in real client work before it becomes a standalone product.*
+*Creándola OS is the internal product/technology layer of Creándola — shared OS for service + agents, proven first in the company's own operation and in real client work (see RFC 0001).*

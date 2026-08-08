@@ -6,6 +6,7 @@ context: |
   Testing: Vitest + happy-dom (unit/integration), pgTAP (database), Playwright (E2E)
   Architecture: Clean/Hexagonal — pure domain layer (src/domain/) with zero React/Supabase/Next deps
   Patterns: one Next.js multi-workspace app on Vercel, Cloudflare DNS to Vercel origin, three Supabase clients (SSR/Browser/Admin), RLS + authenticated SECURITY INVOKER RPC writes with SQL membership authorization, trigger-based provisioning, slug + domain_mappings host resolution, channel-separated capabilities, dedupe via SHA-256 + advisory lock
+  Operating model: RFC 0001 — service + agents over shared OS; agent drafts, human commits; one app / many workspaces (not per-client forks)
   Delivery: RFC 0004 — build for 1 / template for 10; critical path WU1b host schema then WU2–WU3; AI infra deferred; one optional stateless wedge AI feature allowed
   DB row decoders: runtime Zod validation on every DB read
 
