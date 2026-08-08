@@ -29,7 +29,8 @@ Related specs (do not duplicate here):
 
 - [RFC 0002](0002-company-ontology-v1.md) — ontology
 - [RFC 0003](0003-context-engine-data-model.md) — data model
-- [RFC 0004](0004-delivery-strategy.md) — delivery order and wedge constraints (**Accepted**)
+- [RFC 0004](0004-delivery-strategy.md) — delivery order and wedge constraints (**Accepted**, amended by 0005)
+- [RFC 0005](0005-client-zero-whatsapp-crm.md) — client-zero first: Creándola WhatsApp CRM pressure
 
 ---
 
