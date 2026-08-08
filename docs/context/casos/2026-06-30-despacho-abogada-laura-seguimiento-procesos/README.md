@@ -1,6 +1,8 @@
 # Caso Laura — seguimiento de procesos legales
 
-Primer caso real/semi-real para validar el Context Engine de Creándola fuera del piloto interno.
+Primer caso **externo** (anonymized) para validar el Context Engine fuera del piloto interno.
+
+**Prioridad de producto:** el dogfooding de Creándola (cliente cero / WhatsApp CRM, RFC 0005) va primero. Este caso aporta patrones reutilizables; no desplaza la presión de construcción del OS.
 
 ## Camino rápido
 

@@ -2,41 +2,38 @@
 
 ## Cursor Cloud specific instructions
 
-### Business priority (read first)
+### Repo boundary (ideological)
 
-- **Client zero = Creándola’s own operation**, especially WhatsApp → CRM/seguimiento ([RFC 0005](docs/rfcs/0005-client-zero-whatsapp-crm.md), case `docs/context/casos/2026-07-06-creandola-operacion-interna/`).
-- External pilots (Laura, Gecontri, …) reuse the **same** Phase 1 wedge via config/content; they do not redefine the first build driver.
-- Do **not** expand `entity_type` or add Conversation/Message tables without an OpenSpec change. Prefer `entities.properties` for Contact/Deal fields until WU2 locks schemas.
-- **Graphify** (code knowledge graphs) is optional AI-dev tooling only — not part of the product Scope.
-- Privacy: never commit real chats, phones, tokens, or client PII.
+This repo is **Creándola OS** only.
 
-### Product scope (current repo state)
+- **In scope:** Context Engine substrate (Postgres schema, future Next.js operator app, workspace tenancy, CRM/seguimiento memory for Creándola as client zero).
+- **Out of scope here:** the public marketing landing (`creandola-landing` is a **different** repository). Do not treat landing envs, WhatsApp tokens on the landing Vercel project, or `www.somoscreandola.co` deploy config as belonging to this codebase.
+- **Graphify** (or similar code-knowledge tools): optional AI-dev tooling only — not a product feature of Creándola OS.
 
-Creándola OS targets **Next.js on Vercel + Supabase Cloud** (no self-managed Docker in production).
+### Business priority
 
-- Vercel project: `creandola-os` — preview/dev = `*.vercel.app`; production host = `os.somoscreandola.co`
-- Supabase project ref: `jfaeahukuekyismvxpfw` (`https://jfaeahukuekyismvxpfw.supabase.co`)
+1. Dogfood **Creándola’s own operation** first — WhatsApp → CRM/seguimiento ([RFC 0005](docs/rfcs/0005-client-zero-whatsapp-crm.md), case `docs/context/casos/2026-07-06-creandola-operacion-interna/`).
+2. External pilots reuse the **same** Phase 1 wedge via config/content; they do not redefine the build driver.
+3. Do **not** expand `entity_type` or add Conversation/Message tables without OpenSpec. Prefer `entities.properties` for Contact/Deal until WU2 locks schemas.
+4. Privacy: never commit real chats, phones, tokens, or client PII.
 
-In this repository today, the **implemented and testable surface is the database foundation** (`supabase/migrations`, `supabase/tests`). There is **no `src/` / `app/` / `pages/` directory yet**, so `npm run dev`, `npm run build`, `npm run lint`, `npm run typecheck`, and `npm test` cannot succeed until Work Units 2–3 land (see `openspec/changes/core-foundation/tasks.md`).
+### Product scope (current tree)
 
-### Preferred local mode: production-like (no Docker)
+- Implemented: database foundation (`supabase/migrations`, `supabase/tests`).
+- Not present yet: `src/` / `app/` / domain Zod / Vitest app tests (WU2–WU3 in `openspec/changes/core-foundation/tasks.md`).
+- Target hosting (when wiring later): Vercel project `creandola-os` (`*.vercel.app` = preview/dev; `os.somoscreandola.co` = production); Supabase project `jfaeahukuekyismvxpfw`.
 
-1. `npm install`
-2. Copy `.env.local.example` → `.env.local` and fill with **hosted** values from the Supabase dashboard for project `jfaeahukuekyismvxpfw` (Settings → API):
-   - `NEXT_PUBLIC_SUPABASE_URL` → `https://jfaeahukuekyismvxpfw.supabase.co`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` → publishable / anon key
-   - `SUPABASE_SECRET_KEY` → secret / service_role key (server-only)
-3. Apply migrations remotely when needed (`supabase link` + `supabase db push`), not via local Docker.
-4. When the Next.js app exists: `npm run dev` (reads `.env.local`).
+### Working without secrets
 
-**Note:** Vercel env vars marked **Sensitive** cannot be pulled back via CLI after creation. Prefer Cursor secrets or re-paste keys when agents need them locally.
+Docs, RFCs, OpenSpec, SQL migrations, and pgTAP contracts can be edited without any env vars. Do not block structural/ideological work on Supabase/Vercel keys.
 
-Do **not** assume a local stack on ports `54321`/`54322` unless Docker was explicitly requested for that session.
+When credentials are eventually needed for hosted smoke tests:
 
-### What Docker local mode is for
+1. Use **this OS project’s** keys only (dashboard for `jfaeahukuekyismvxpfw`), not the landing project.
+2. Copy `.env.local.example` → `.env.local` (gitignored).
 
-`supabase start` + `supabase db reset` + `supabase test db` + `node supabase/tests/concurrency-harness.mjs` require Docker and the Supabase CLI. Use that path only when validating pgTAP / concurrency against a disposable local Postgres. The harness hard-codes `postgresql://postgres:postgres@127.0.0.1:54322/postgres`.
+Local Docker + `supabase start` is optional and only for pgTAP / concurrency harness.
 
 ### Standard commands
 
-See `README.md` and `package.json` scripts. Quality gates (`lint`, `typecheck`, `test`, `build`) are the intended gates once app/domain source and configs exist; they are not currently runnable as-is.
+See `README.md` and `package.json`. Quality gates (`lint`, `typecheck`, `test`, `build`) apply once app/domain source exists.

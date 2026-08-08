@@ -26,7 +26,7 @@ External pilots remain valuable and anonymized in `docs/context/casos/`. They do
 | Topic | Prior emphasis (esp. RFC 0004) | Updated emphasis (this RFC) |
 |-------|--------------------------------|-----------------------------|
 | Who waits first | “Paying clients waiting” (Laura, Gecontri) | **Creándola operators** using the OS daily |
-| WhatsApp | Explicitly **deferred** until after the wedge app works | **First integration candidate** for client-zero intake (Meta Cloud API app already exists) |
+| WhatsApp | Explicitly **deferred** until after the wedge app works | **First integration candidate** for client-zero intake (Meta Cloud API; **separate** from the landing repo) |
 | First useful surface | Phase 1 wedge UI for meetings/docs | Same Phase 1 primitives, but **driven by WhatsApp → contact/opportunity memory** |
 | CRM | “Not a CRM-only tool” (still true as product category) | **CRM/seguimiento is a horizontal Creándola must run on the OS** (see horizontals in RFC 0001 §4) |
 | Graphify / code graphs | Not mentioned | **Out of product scope.** Optional AI-dev tooling; useful analogy only (structure + provenance for *code*, not company memory) |
@@ -84,7 +84,9 @@ Replace with the **actual** stages from daily WhatsApp practice before writing Z
 
 ## 5. WhatsApp Cloud API (Meta) — assumed starting point
 
-Creándola already has a Meta app and production env vars on related Vercel projects (landing). For Creándola OS intake, the usual remaining work is operational, not “whether to use WhatsApp”:
+Creándola already has a Meta WhatsApp app for the business. That channel is independent of the **landing** repo (`creandola-landing`): acquisition site ≠ OS. When intake is wired, credentials and webhooks belong to **this** OS’s infrastructure (Vercel project `creandola-os` + Supabase `jfaeahukuekyismvxpfw`), not to the landing deploy.
+
+Usual remaining work (operational):
 
 1. Verified business phone number on the WhatsApp product.
 2. Business Verification for production messaging limits.

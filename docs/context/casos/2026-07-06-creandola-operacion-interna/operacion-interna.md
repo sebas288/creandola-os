@@ -36,7 +36,7 @@ Lead llega
 
 | Horizontal | Prioridad | Motivo |
 |---|---|---|
-| Captación | Media | La landing ya existe, pero debe conectarse mejor con seguimiento interno. |
+| Captación | Media | La landing pública vive en **otro repo** (`creandola-landing`); el OS no la hospeda. Debe conectar leads hacia seguimiento interno sin mezclar deploys ni secrets. |
 | Calificación | Alta | Cada oportunidad debe priorizarse antes de consumir tiempo estratégico. |
 | CRM / seguimiento | Alta | Ninguna oportunidad, cliente o proyecto debe quedar sin responsable ni próxima acción. |
 | Atención / WhatsApp | Alta | WhatsApp (Meta Cloud API) ya tiene app; es el **canal de entrada prioritario** del cliente cero (RFC 0005) y debe alimentar triage CRM. |

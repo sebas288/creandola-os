@@ -348,19 +348,23 @@ If most answers are no, document it first and keep delivering the service.
 RFC 0001 — Company OS Foundations (this document)
 RFC 0002 — Company Ontology v1
 RFC 0003 — Context Engine Data Model
-RFC 0004 — Delivery Strategy (Accepted)
+RFC 0004 — Delivery Strategy (Accepted; amended by 0005)
+RFC 0005 — Client-zero first: Creándola WhatsApp CRM (dogfooding pressure)
 ```
 
-Later RFCs may cover deeper memory/provenance rules, events detail, integrations, and AI infrastructure — without contradicting the operating model here or the delivery constraints in RFC 0004.
+Later RFCs may cover deeper memory/provenance rules, events detail, integrations, and AI infrastructure — without contradicting the operating model here or the delivery constraints in RFC 0004 / 0005.
+
+Doc index: [`docs/README.md`](../README.md).
 
 ---
 
 ## 19. Open questions
 
 1. Who is the default “human committer” per pilot: Creándola operator only, or client owner with Creándola review?
-2. Which single wedge AI assist ships first after WU3 — meeting summary vs assisted drafting (also RFC 0004 §8)?
-3. What is the first measurable outcome of the service+OS loop: saved time, fewer missed follow-ups, clearer decisions, or monthly report quality?
-4. How much client data should enter the system during early validation (privacy-preserving by default in-repo)?
+2. Exact Creándola commercial stages and whether Contact and Deal stay separate (RFC 0005) — decide before locking Zod schemas.
+3. Which single wedge AI assist ships first after WU3 — WhatsApp triage assist vs meeting summary vs assisted drafting (RFC 0004 §8 / 0005)?
+4. What is the first measurable outcome of the service+OS loop: saved time, fewer missed follow-ups, clearer decisions, or monthly report quality?
+5. How much client data should enter the system during early validation (privacy-preserving by default in-repo)?
 
 ---
 
@@ -377,7 +381,8 @@ Later RFCs may cover deeper memory/provenance rules, events detail, integrations
 9. Knowledge and related capabilities are core services, not competing modules.
 10. The first wedge is clients / projects / meetings / decisions / tasks / documents.
 11. Integrate existing tools before replacing them.
-12. Autonomous agents come after trusted context and validated workflows; AI infrastructure follows RFC 0004.
+13. Client zero (Creándola internal, WhatsApp → CRM) is the first production pressure; external pilots follow on the same wedge (RFC 0005).
+14. The public landing site is a separate product/repo; it is not Creándola OS.
 
 ---
 

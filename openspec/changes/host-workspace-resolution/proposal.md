@@ -46,7 +46,8 @@ Customer / platform DNS in Cloudflare
 - Request sequence: host → mapping → settings → Auth → membership → RLS → experience
 - Narrow pre-auth resolver (Edge Function or server-only secret path) returning only safe public fields
 - Authenticated re-resolution through RLS before private data
-- Central auth: `app.somoscreandola.co/login` and `/auth/callback`; no claim that customer domains receive the central session in this phase
+- Central auth: `os.somoscreandola.co/login` and `/auth/callback`; no claim that customer domains receive the central session in this phase
+- Note: public marketing site (`creandola-landing` / `www.somoscreandola.co`) is a separate repository and is not the OS auth host
 
 ### Out of Scope
 

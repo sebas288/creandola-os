@@ -7,7 +7,8 @@ context: |
   Architecture: Clean/Hexagonal — pure domain layer (src/domain/) with zero React/Supabase/Next deps
   Patterns: one Next.js multi-workspace app on Vercel, Cloudflare DNS to Vercel origin, three Supabase clients (SSR/Browser/Admin), RLS + authenticated SECURITY INVOKER RPC writes with SQL membership authorization, trigger-based provisioning, slug + domain_mappings host resolution, channel-separated capabilities, dedupe via SHA-256 + advisory lock
   Operating model: RFC 0001 — service + agents over shared OS; agent drafts, human commits; one app / many workspaces (not per-client forks)
-  Delivery: RFC 0004 — build for 1 / template for 10; critical path WU1b host schema then WU2–WU3; AI infra deferred; one optional stateless wedge AI feature allowed
+  Delivery: RFC 0004 + RFC 0005 — build for 1 (Creándola client zero / WhatsApp CRM) then template for 10; critical path WU1b → WU2 → WU3 → WhatsApp intake; AI infra deferred; landing repo is out of scope
+  Repo boundary: creandola-os ≠ creandola-landing (separate marketing site); never share deploy secrets across those repos
   DB row decoders: runtime Zod validation on every DB read
 
 rules:
@@ -24,14 +25,16 @@ rules:
     - Keep tasks completable in one session
   apply:
     - Follow existing code patterns from invoicesAUD sibling project
-    - Supabase is the managed backend: Auth, Postgres, RLS, Storage, Edge Functions, and Cron/jobs when applicable; pgvector is a future evolution after first production client use (RFC 0004)
-    - Vercel hosts the single Next.js multi-workspace app; Cloudflare holds DNS; customer frontend domains are never Supabase custom domains
+    - Supabase is the managed backend: Auth, Postgres, RLS, Storage, Edge Functions, and Cron/jobs when applicable; pgvector is a future evolution after first dogfood production use (RFC 0004 / 0005)
+    - Vercel hosts the single Next.js multi-workspace app (project creandola-os); Cloudflare holds DNS; production host os.somoscreandola.co; customer frontend domains are never Supabase custom domains
+    - Do not pull env/config from creandola-landing; that repo is acquisition-only
     - Three Supabase clients: Server (SSR), Browser (auth only), Admin (secret key, server-only)
     - RLS: authenticated reads are membership-filtered; user writes use SECURITY INVOKER RPC wrappers with SQL membership authorization; service_role/server-only operations are limited to provisioning, trusted jobs, and the narrow pre-auth host resolver
     - Host resolution: domain_mappings + workspace_settings; host alone is never authorization
     - Idempotency: UUID key + SHA-256 fingerprint + pg_advisory_xact_lock
     - Next.js 16 proxy.ts session refresh (not middleware.ts), open redirect prevention, cookie security (SameSite=Lax)
     - Limits duplicated in domain AND database CHECK constraints
+    - Do not expand entity_type or add Message tables without OpenSpec; map Contact/Deal via properties first (RFC 0005)
     tdd: true
     test_command: "npx vitest run"
   verify:

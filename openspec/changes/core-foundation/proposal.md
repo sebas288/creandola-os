@@ -25,8 +25,9 @@ Create the smallest secure foundation on which later Context Engine changes can 
 - `events`, `sources`, `evidence`, `memories`, `documents`, `context_packs`, `ai_runs`, and `access_policies` tables
 - Provenance foreign keys such as `source_id`
 - Entity update/delete RPCs, membership management, and workspace creation outside initial provisioning
-- Per-customer OAuth callbacks on customer domains (central app auth first)
-- WhatsApp, email, AI infrastructure / embeddings / pgvector, dashboards, metrics, external integrations, and file assets
+- Per-customer OAuth callbacks on customer domains (central OS auth on `os.somoscreandola.co` first)
+- WhatsApp / email / AI infrastructure / embeddings / pgvector / dashboards / metrics / file assets **inside WU1–WU3** (WhatsApp client-zero intake is sequenced **after** the app shell per RFC 0005 — not in this change’s acceptance criteria)
+- The public marketing landing (`creandola-landing`) — separate repository; never part of this change
 - Full integration or browser E2E coverage beyond the app-shell smoke checks
 
 ## Capabilities

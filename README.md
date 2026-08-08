@@ -4,6 +4,8 @@
 
 Creándola OS is not another CRM, not another project manager, not another wiki. It is the operational memory layer under Creándola’s service delivery: one app, many workspaces, agents that draft, humans that commit.
 
+**Not this repo:** the public marketing site (`creandola-landing` / `somoscreandola.co`) is a separate codebase for brand and acquisition. This repository is only the OS.
+
 ## Why this exists
 
 Most companies don't suffer from a lack of tools. They suffer from a lack of connected context. Their information lives in WhatsApp, email, Drive, Figma, GitHub, spreadsheets, CRM, meetings, notes, contracts, and the founder's memory.
@@ -120,13 +122,15 @@ See `AGENTS.md` for Cloud Agent notes.
 ## Repository layout
 
 ```text
-docs/rfcs/          Strategic and technical decision records (0001–0004)
+docs/rfcs/          Strategic and technical decision records (0001–0005)
+docs/context/casos/ Validated real-world pilot cases (anonymized); client zero first
+docs/README.md      Doc map + OS vs landing boundary
 openspec/           Spec-driven development artifacts (proposals, specs, designs, tasks)
 supabase/           Migrations, pgTAP tests, local config
-src/                Next.js application (domain, infrastructure, app routes)
-docs/context/casos/ Validated real-world pilot cases (anonymized)
+src/                Next.js application (planned — WU2/WU3; not in tree yet)
 ```
 
+Full documentation index: [`docs/README.md`](docs/README.md).
 ## Status
 
 Early-stage platform under active development. The foundation is real, tested, and opinionated; the Context Engine surfaces (search, memories, AI assistance) are the next horizon.
